@@ -286,8 +286,8 @@ esp_err_t es8388_init(audio_hal_codec_config_t *cfg)
 
     res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL24, 0x1E);  // Set L1 R1 L2 R2 volume. 0x00: -30dB, 0x1E: 0dB, 0x21: 3dB
     res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL25, 0x1E);
-    res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL26, 0);
-    res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL27, 0);
+    res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL26, 0x1E);
+    res |= es_write_reg(ES8388_ADDR, ES8388_DACCONTROL27, 0x1E);
     // res |= es8388_set_adc_dac_volume(ES_MODULE_DAC, 0, 0);       // 0db
     int tmp = 0;
     if (AUDIO_HAL_DAC_OUTPUT_LINE2 == cfg->dac_output) {

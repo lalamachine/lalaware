@@ -1,10 +1,9 @@
-#include "audio_error.h"
-#include "audio_mem.h"
-#include "board.h"
-#include "driver/gpio.h"
-#include "esp_log.h"
-#include "soc/io_mux_reg.h"
-#include "soc/soc_caps.h"
+#include <audio_error.h>
+#include <board_pins_config.h>
+#include <driver/i2c.h>
+#include <esp_log.h>
+#include <hal/i2c_types.h>
+#include <soc/gpio_num.h>
 
 static const char *TAG = "board";
 
@@ -37,26 +36,22 @@ esp_err_t get_i2s_pins(int port, board_i2s_pin_t *i2s_config)
   return ESP_OK;
 }
 
-// sdcard
-
 int8_t get_sdcard_intr_gpio(void)
 {
-  return SDCARD_INTR_GPIO;
+  return GPIO_NUM_34;
 }
 
 int8_t get_sdcard_open_file_num_max(void)
 {
-  return SDCARD_OPEN_FILE_NUM_MAX;
+  return 2;
 }
-
-// input-output pins
 
 int8_t get_headphone_detect_gpio(void)
 {
-  return HEADPHONE_DETECT;
+  return GPIO_NUM_39;
 }
 
 int8_t get_pa_enable_gpio(void)
 {
-  return PA_ENABLE_GPIO;
+  return GPIO_NUM_21;
 }
