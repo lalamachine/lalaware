@@ -11,7 +11,7 @@
 #define ESP_SD_PIN_D2 GPIO_NUM_12
 #define ESP_SD_PIN_D3 GPIO_NUM_13
 
-#define BOARD_PA_GAIN 4
+#define BOARD_PA_GAIN 3.6
 
 #ifdef __cplusplus
 extern "C" {

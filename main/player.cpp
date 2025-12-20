@@ -51,7 +51,7 @@ void Player::run()
     auto event2 = rotary_knob.update();
     if (event2 == RotaryKnob::Event::minus) {
       int volume = audio_board.get_volume();
-      if (volume > 0) {
+      if (volume > 1) {
         audio_board.set_volume(volume - 1);
       }
     }

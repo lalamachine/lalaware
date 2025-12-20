@@ -33,6 +33,8 @@ static const char *ES_TAG = "ES8388_DRIVER";
 static i2c_bus_handle_t i2c_handle;
 static codec_dac_volume_config_t *dac_vol_handle;
 
+float conv_volume(int volume) { return (volume - 101) / 2.0f; }
+
 #define ES8388_DAC_VOL_CFG_DEFAULT() {                      \
     .max_dac_volume = 0,                                    \
     .min_dac_volume = -96,                                  \
@@ -42,7 +44,7 @@ static codec_dac_volume_config_t *dac_vol_handle;
     .zero_volume_reg = 0,                                   \
     .reg_value = 0,                                         \
     .user_volume = 0,                                       \
-    .offset_conv_volume = NULL,                             \
+    .offset_conv_volume = conv_volume,                      \
 }
 
 #define ES_ASSERT(a, format, b, ...) \
