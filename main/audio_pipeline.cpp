@@ -3,17 +3,17 @@
 #include "audio_element.h"
 
 #include <audio_pipeline.h>
-#include <cstdbool>
 #include <esp_err.h>
 #include <esp_log.h>
 #include <fatfs_stream.h>
 #include <filter_resample.h>
 #include <i2s_stream.h>
 #include <mp3_decoder.h>
-#include <string>
 #include <utility>
 
 static const char *TAG = "audio_pipeline";
+
+AudioPipeline::AudioPipeline() : loop(false), position(0) {}
 
 void AudioPipeline::initialize()
 {
@@ -53,10 +53,12 @@ void AudioPipeline::initialize()
   thread = std::thread(&AudioPipeline::entry, this);
 }
 
-void AudioPipeline::play(std::queue<std::string> &&tracks)
+void AudioPipeline::play(std::vector<std::string> &&tracks, bool loop)
 {
   std::lock_guard<std::mutex> guard(mutex);
-  std::swap(queue, tracks);
+  std::swap(this->tracks, tracks);
+  this->loop = loop;
+  position = 0;
   play_next();
 }
 
@@ -115,14 +117,17 @@ void AudioPipeline::entry()
 
 void AudioPipeline::play_next()
 {
-  if (!queue.empty()) {
-    ESP_LOGI(TAG, "playing %s", queue.front().c_str());
-    audio_element_set_uri(fatfs_stream, queue.front().c_str());
+  if (position < tracks.size()) {
+    std::string &track = tracks[position++];
+    if (loop && (position == tracks.size())) {
+      position = 0;
+    }
+    ESP_LOGI(TAG, "playing %s", track.c_str());
+    audio_element_set_uri(fatfs_stream, track.c_str());
     audio_pipeline_reset_ringbuffer(audio_pipeline);
     audio_pipeline_reset_elements(audio_pipeline);
     audio_pipeline_change_state(audio_pipeline, AEL_STATE_INIT);
     audio_pipeline_run(audio_pipeline);
-    queue.pop();
   } else {
     ESP_LOGI(TAG, "nothing to play");
     terminate();

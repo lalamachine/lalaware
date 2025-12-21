@@ -1,15 +1,15 @@
 #include "player.h"
 
 #include "period.h"
+#include "random_generator.h"
 
+#include <algorithm>
 #include <cJSON.h>
 #include <cstdbool>
 #include <cstdio>
 #include <dirent.h>
 #include <esp_log.h>
 #include <fstream>
-#include <queue>
-#include <string>
 
 static const char *TAG = "player";
 
@@ -80,25 +80,15 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
            uid[0], uid[1], uid[2], uid[3]);
   std::ifstream card_file(filename);
   if (card_file.is_open()) {
-    std::queue<std::string> tracks;
+    std::vector<std::string> tracks;
+    bool loop = false;
     std::string data(std::istreambuf_iterator<char>(card_file), {});
     cJSON *json_root = cJSON_ParseWithLength(data.c_str(), data.length());
     if (json_root) {
       cJSON *json_path = cJSON_GetObjectItem(json_root, "path");
       if (json_path && cJSON_IsString(json_path)) {
-        std::string path(json_path->valuestring);
-        std::string album_path = "/sd/" + path;
-        ESP_LOGI(TAG, "listing %s", album_path.c_str());
-        DIR *dir = opendir(album_path.c_str());
-        if (dir) {
-          struct dirent *entry;
-          while ((entry = readdir(dir)) != NULL) {
-            ESP_LOGI(TAG, "found %s", entry->d_name);
-            std::string track_path = album_path + "/" + entry->d_name;
-            tracks.push(track_path);
-          }
-          closedir(dir);
-        }
+        std::string album_path = "/sd/" + std::string(json_path->valuestring);
+        list_files(album_path, tracks);
       }
       cJSON *json_files = cJSON_GetObjectItem(json_root, "files");
       if (json_files && cJSON_IsArray(json_files)) {
@@ -106,11 +96,19 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
         cJSON_ArrayForEach(json_file, json_files)
         {
           if (cJSON_IsString(json_file)) {
-            std::string file(json_file->valuestring);
-            std::string tarck_path = "/sd/" + file;
-            tracks.push(tarck_path);
+            std::string track_path =
+                "/sd/" + std::string(json_file->valuestring);
+            tracks.push_back(track_path);
           }
         }
+      }
+      cJSON *json_loop = cJSON_GetObjectItem(json_root, "loop");
+      if (json_loop && cJSON_IsTrue(json_loop)) {
+        loop = true;
+      }
+      cJSON *json_shuffle = cJSON_GetObjectItem(json_root, "shuffle");
+      if (json_shuffle && cJSON_IsTrue(json_shuffle)) {
+        std::shuffle(tracks.begin(), tracks.end(), RandomGenerator());
       }
       cJSON *json_volume = cJSON_GetObjectItem(json_root, "volume");
       if (json_volume && cJSON_IsNumber(json_volume)) {
@@ -118,9 +116,26 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
       }
       cJSON_Delete(json_root);
     }
-    audio_pipeline.play(std::move(tracks));
+    audio_pipeline.play(std::move(tracks), loop);
   } else {
     std::ofstream new_file(filename);
     new_file << "{}";
   }
+}
+
+void Player::list_files(const std::string &path,
+                        std::vector<std::string> &files)
+{
+  ESP_LOGI(TAG, "listing %s", path.c_str());
+  DIR *dir = opendir(path.c_str());
+  if (dir) {
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+      ESP_LOGI(TAG, "found %s", entry->d_name);
+      std::string file = path + "/" + entry->d_name;
+      files.push_back(file);
+    }
+    closedir(dir);
+  }
+  std::sort(files.begin(), files.end());
 }

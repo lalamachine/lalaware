@@ -9,6 +9,8 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 class Player
 {
@@ -26,4 +28,5 @@ private:
   RotaryKnob rotary_knob;
   void initialize();
   void load_tracks(const std::array<uint8_t, 4> &uid);
+  void list_files(const std::string &path, std::vector<std::string> &files);
 };
