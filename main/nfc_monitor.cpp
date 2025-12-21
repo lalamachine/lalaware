@@ -35,9 +35,8 @@ NfcMonitor::Status NfcMonitor::get_status()
 void NfcMonitor::entry()
 {
   if (initialize()) {
-    Period period(250);
+    Period period(1000);
     while (true) {
-      period.wait_next();
       std::vector<uint8_t> uid;
       if (read_uid(uid)) {
         std::lock_guard<std::mutex> guard(mutex);
@@ -48,6 +47,7 @@ void NfcMonitor::entry()
         status.present = false;
         std::fill_n(status.uid.begin(), 4, 0);
       }
+      period.wait_next();
     }
   }
 }
