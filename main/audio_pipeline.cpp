@@ -19,7 +19,6 @@ void AudioPipeline::initialize()
 {
   audio_pipeline_cfg_t audio_pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
   audio_pipeline = audio_pipeline_init(&audio_pipeline_cfg);
-  mem_assert(pipeline);
 
   fatfs_stream_cfg_t fatfs_stream_cfg = FATFS_STREAM_CFG_DEFAULT();
   fatfs_stream_cfg.type = AUDIO_STREAM_READER;
