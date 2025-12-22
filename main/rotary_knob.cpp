@@ -1,5 +1,7 @@
 #include "rotary_knob.h"
 
+#include <esp_err.h>
+
 RotaryKnob::RotaryKnob(gpio_num_t a_pin, gpio_num_t b_pin) :
   a_pin(a_pin), b_pin(b_pin), value(0)
 {
