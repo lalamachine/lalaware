@@ -49,13 +49,13 @@ void Player::run()
       audio_pipeline.skip();
     }
     auto event2 = rotary_knob.update();
-    if (event2 == RotaryKnob::Event::minus) {
+    if (event2 == RotaryKnob::Event::left) {
       int volume = audio_board.get_volume();
       if (volume > 1) {
         audio_board.set_volume(volume - 1);
       }
     }
-    if (event2 == RotaryKnob::Event::plus) {
+    if (event2 == RotaryKnob::Event::right) {
       int volume = audio_board.get_volume();
       if (volume < 100) {
         audio_board.set_volume(volume + 1);

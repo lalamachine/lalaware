@@ -3,7 +3,10 @@
 #include <audio_hal.h>
 #include <board_pins_config.h>
 #include <driver/gpio.h>
+#include <esp_log.h>
 #include <soc/gpio_num.h>
+
+static const char *TAG = "audio_board";
 
 void AudioBoard::initialize()
 {
@@ -25,6 +28,7 @@ int AudioBoard::get_volume()
 
 void AudioBoard::set_volume(int volume)
 {
+  ESP_LOGI(TAG, "setting volume %d", volume);
   board_handle->audio_hal->audio_codec_set_volume(volume);
 }
 
