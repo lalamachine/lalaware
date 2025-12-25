@@ -4,12 +4,7 @@
 #include "period.h"
 
 #include <algorithm>
-#include <cstdbool>
-#include <cstdint>
 #include <numeric>
-#include <thread>
-#include <unistd.h>
-#include <vector>
 
 NfcMonitor::NfcMonitor(I2cBus &i2c_bus) :
   I2cDevice(i2c_bus, {.dev_addr_length = I2C_ADDR_BIT_LEN_7,

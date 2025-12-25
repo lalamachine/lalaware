@@ -1,6 +1,5 @@
 #include "i2c_device.h"
 
-#include <driver/i2c_types.h>
 #include <esp_err.h>
 
 I2cDevice::I2cDevice(I2cBus &bus, i2c_device_config_t config)

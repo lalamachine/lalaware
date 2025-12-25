@@ -1,5 +1,8 @@
 #include "i2c_bus.h"
 
+#include <esp_err.h>
+#include <soc/clk_tree_defs.h>
+
 I2cBus::I2cBus(i2c_port_num_t port, gpio_num_t sda_pin, gpio_num_t scl_pin)
 {
   i2c_master_bus_config_t config = {.i2c_port = port,

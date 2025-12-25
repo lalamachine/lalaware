@@ -4,6 +4,7 @@
 #include <board_pins_config.h>
 #include <driver/gpio.h>
 #include <esp_log.h>
+#include <hal/gpio_types.h>
 #include <soc/gpio_num.h>
 
 static const char *TAG = "audio_board";

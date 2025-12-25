@@ -3,8 +3,10 @@
 #include "i2c_bus.h"
 
 #include <cstdbool>
+#include <cstddef>
 #include <cstdint>
 #include <driver/i2c_master.h>
+#include <driver/i2c_types.h>
 #include <vector>
 
 class I2cDevice

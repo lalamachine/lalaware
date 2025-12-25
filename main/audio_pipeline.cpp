@@ -1,8 +1,5 @@
 #include "audio_pipeline.h"
 
-#include "audio_element.h"
-
-#include <audio_pipeline.h>
 #include <esp_err.h>
 #include <esp_log.h>
 #include <fatfs_stream.h>
