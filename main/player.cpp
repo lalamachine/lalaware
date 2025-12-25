@@ -33,11 +33,14 @@ void Player::run()
     if (status.present) {
       if (!playing) {
         playing = true;
+        ESP_LOGI(TAG, "card inserted, UID=%02X%02X%02X%02X", status.uid[0],
+                 status.uid[1], status.uid[2], status.uid[3]);
         load_tracks(status.uid);
       }
     } else {
       if (playing) {
         playing = false;
+        ESP_LOGI(TAG, "card removed");
         audio_pipeline.stop();
       }
     }
