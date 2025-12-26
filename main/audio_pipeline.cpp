@@ -83,7 +83,6 @@ void AudioPipeline::entry()
             msg.cmd == AEL_MSG_CMD_REPORT_MUSIC_INFO) {
           audio_element_info_t info = {};
           audio_element_getinfo(mp3_decoder, &info);
-          audio_element_setinfo(i2s_stream, &info);
           rsp_filter_set_src_info(rsp_filter, info.sample_rates, info.channels);
         }
         if (msg.source == i2s_stream && msg.cmd == AEL_MSG_CMD_REPORT_STATUS) {
