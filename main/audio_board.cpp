@@ -10,6 +10,8 @@
 
 static const char *TAG = "audio_board";
 
+AudioBoard::AudioBoard() : mono(false) {}
+
 void AudioBoard::initialize()
 {
   board_handle = audio_board_init();
@@ -19,6 +21,27 @@ void AudioBoard::initialize()
                      GPIO_MODE_INPUT);
   gpio_set_direction(static_cast<gpio_num_t>(get_pa_enable_gpio()),
                      GPIO_MODE_OUTPUT);
+}
+
+void AudioBoard::process(bool playing)
+{
+  bool headphone_detect =
+      gpio_get_level(static_cast<gpio_num_t>(get_headphone_detect_gpio()));
+  gpio_set_level(static_cast<gpio_num_t>(get_pa_enable_gpio()),
+                 headphone_detect && playing);
+  if (headphone_detect) {
+    if (!mono) {
+      ESP_LOGI(TAG, "switching to mono");
+      mono = true;
+      board_handle->audio_hal->audio_codec_enable_pa(mono);
+    }
+  } else {
+    if (mono) {
+      ESP_LOGI(TAG, "switching to stereo");
+      mono = false;
+      board_handle->audio_hal->audio_codec_enable_pa(mono);
+    }
+  }
 }
 
 int AudioBoard::get_volume()
@@ -37,14 +60,4 @@ void AudioBoard::set_volume(int volume)
 bool AudioBoard::sdcard_is_mounted()
 {
   return periph_sdcard_is_mounted(board_handle->sdcard);
-}
-
-bool AudioBoard::get_headphone_detect()
-{
-  return gpio_get_level(static_cast<gpio_num_t>(get_headphone_detect_gpio()));
-}
-
-void AudioBoard::set_pa_enable(bool pa_enable)
-{
-  gpio_set_level(static_cast<gpio_num_t>(get_pa_enable_gpio()), pa_enable);
 }

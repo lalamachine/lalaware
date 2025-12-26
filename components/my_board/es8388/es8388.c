@@ -319,19 +319,6 @@ esp_err_t es8388_init(audio_hal_codec_config_t *cfg)
     res |= es8388_set_adc_dac_volume(ES_MODULE_ADC, 0, 0);    // 0db
     res |= es_write_reg(ES8388_ADDR, ES8388_ADCPOWER, 0x09);  // Power on ADC, enable LIN&RIN, power off MICBIAS, and set int1lp to low power mode
 
-    /* es8388 PA gpio_config */
-    if (get_pa_enable_gpio() != -1) {
-        gpio_config_t io_conf;
-        memset(&io_conf, 0, sizeof(io_conf));
-        io_conf.mode = GPIO_MODE_OUTPUT;
-        io_conf.pin_bit_mask = BIT64(get_pa_enable_gpio());
-        io_conf.pull_down_en = 0;
-        io_conf.pull_up_en = 0;
-        gpio_config(&io_conf);
-        /* enable es8388 PA */
-        es8388_pa_power(true);
-    }
-
     codec_dac_volume_config_t vol_cfg = ES8388_DAC_VOL_CFG_DEFAULT();
     dac_vol_handle = audio_codec_volume_init(&vol_cfg);
     ESP_LOGI(ES_TAG, "init,out:%02x, in:%02x", cfg->dac_output, cfg->adc_input);
@@ -566,5 +553,5 @@ esp_err_t es8388_config_i2s(audio_hal_codec_mode_t mode, audio_hal_codec_i2s_ifa
 
 esp_err_t es8388_pa_power(bool enable)
 {
-    return ESP_ERR_NOT_SUPPORTED;
+    return es_write_reg(ES8388_ADDR, ES8388_DACCONTROL7, enable ? 0x60 : 0x00);
 }

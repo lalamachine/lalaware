@@ -8,10 +8,10 @@
 #include "rotary_knob.h"
 
 #include <array>
+#include <cstdbool>
 #include <cstdint>
 #include <string>
 #include <vector>
-
 class Player
 {
 public:
@@ -26,6 +26,8 @@ private:
   NfcMonitor nfc_monitor;
   PushButton push_button;
   RotaryKnob rotary_knob;
+  bool playing;
+  int volume;
   void initialize();
   void load_tracks(const std::array<uint8_t, 4> &uid);
   void list_files(const std::string &path, std::vector<std::string> &files);

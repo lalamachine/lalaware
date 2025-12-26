@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <cJSON.h>
-#include <cstdbool>
 #include <cstdio>
 #include <dirent.h>
 #include <esp_log.h>
@@ -17,14 +16,17 @@ Player::Player() :
   i2c_bus(1, GPIO_NUM_22, GPIO_NUM_5),
   nfc_monitor(i2c_bus),
   push_button(GPIO_NUM_19),
-  rotary_knob(GPIO_NUM_23, GPIO_NUM_18)
+  rotary_knob(GPIO_NUM_23, GPIO_NUM_18),
+  playing(false),
+  volume(0)
 {
 }
 
 void Player::run()
 {
   initialize();
-  bool playing = false;
+  volume = audio_board.get_volume();
+
   Period period(100);
   while (true) {
     period.wait_next();
@@ -45,7 +47,7 @@ void Player::run()
       }
     }
 
-    audio_board.set_pa_enable(audio_board.get_headphone_detect() && playing);
+    audio_board.process(playing);
 
     auto event = push_button.update();
     if (event == PushButton::Event::short_release) {
@@ -53,15 +55,15 @@ void Player::run()
     }
     auto event2 = rotary_knob.update();
     if (event2 == RotaryKnob::Event::left) {
-      int volume = audio_board.get_volume();
       if (volume > 1) {
-        audio_board.set_volume(volume - 1);
+        volume--;
+        audio_board.set_volume(volume);
       }
     }
     if (event2 == RotaryKnob::Event::right) {
-      int volume = audio_board.get_volume();
       if (volume < 100) {
-        audio_board.set_volume(volume + 1);
+        volume++;
+        audio_board.set_volume(volume);
       }
     }
   }
@@ -115,7 +117,9 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
       }
       cJSON *json_volume = cJSON_GetObjectItem(json_root, "volume");
       if (json_volume && cJSON_IsNumber(json_volume)) {
-        audio_board.set_volume(json_volume->valuedouble);
+        volume = std::ranges::clamp(static_cast<int>(json_volume->valuedouble),
+                                    1, 100);
+        audio_board.set_volume(volume);
       }
       cJSON_Delete(json_root);
     }
