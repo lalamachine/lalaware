@@ -30,7 +30,7 @@ void Player::run()
     period.wait_next();
 
     auto status = nfc_monitor.get_status();
-    if (status.present) {
+    if (status.present && audio_board.sdcard_is_mounted()) {
       if (!playing) {
         playing = true;
         ESP_LOGI(TAG, "card inserted, UID=%02X%02X%02X%02X", status.uid[0],

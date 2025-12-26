@@ -20,15 +20,12 @@ extern "C" {
 struct audio_board_handle
 {
   audio_hal_handle_t audio_hal;
+  esp_periph_handle_t sdcard;
 };
 
 typedef struct audio_board_handle *audio_board_handle_t;
 
 audio_board_handle_t audio_board_init();
-
-audio_hal_handle_t audio_board_codec_init();
-
-esp_err_t audio_board_sdcard_init(esp_periph_set_handle_t set);
 
 audio_board_handle_t audio_board_get_handle();
 
