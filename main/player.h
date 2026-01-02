@@ -6,6 +6,7 @@
 #include "nfc_monitor.h"
 #include "push_button.h"
 #include "rotary_knob.h"
+#include "settings.h"
 
 #include <array>
 #include <cstdbool>
@@ -26,6 +27,7 @@ private:
   NfcMonitor nfc_monitor;
   PushButton push_button;
   RotaryKnob rotary_knob;
+  Settings setting;
   bool playing;
   int volume;
   void initialize();

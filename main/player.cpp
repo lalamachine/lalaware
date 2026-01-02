@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <esp_log.h>
 #include <fstream>
+#include <sys/stat.h>
 
 static const char *TAG = "player";
 
@@ -25,7 +26,9 @@ Player::Player() :
 void Player::run()
 {
   initialize();
-  volume = audio_board.get_volume();
+
+  volume = setting.get_init_volume();
+  audio_board.set_volume(volume);
 
   Period period(100);
   while (true) {
@@ -55,16 +58,14 @@ void Player::run()
     }
     auto event2 = rotary_knob.update();
     if (event2 == RotaryKnob::Event::left) {
-      if (volume > 1) {
-        volume--;
-        audio_board.set_volume(volume);
-      }
+      volume = std::max(volume - setting.get_volume_step(),
+                        setting.get_min_volume());
+      audio_board.set_volume(volume);
     }
     if (event2 == RotaryKnob::Event::right) {
-      if (volume < 100) {
-        volume++;
-        audio_board.set_volume(volume);
-      }
+      volume = std::min(volume + setting.get_volume_step(),
+                        setting.get_max_volume());
+      audio_board.set_volume(volume);
     }
   }
 }
@@ -76,6 +77,7 @@ void Player::initialize()
   nfc_monitor.start();
   push_button.initialize();
   rotary_knob.initialize();
+  setting.load();
 }
 
 void Player::load_tracks(const std::array<uint8_t, 4> &uid)
@@ -91,12 +93,12 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
     cJSON *json_root = cJSON_ParseWithLength(data.c_str(), data.length());
     if (json_root) {
       cJSON *json_path = cJSON_GetObjectItem(json_root, "path");
-      if (json_path && cJSON_IsString(json_path)) {
+      if (cJSON_IsString(json_path)) {
         std::string album_path = "/sd/" + std::string(json_path->valuestring);
         list_files(album_path, tracks);
       }
       cJSON *json_files = cJSON_GetObjectItem(json_root, "files");
-      if (json_files && cJSON_IsArray(json_files)) {
+      if (cJSON_IsArray(json_files)) {
         cJSON *json_file;
         cJSON_ArrayForEach(json_file, json_files)
         {
@@ -108,23 +110,27 @@ void Player::load_tracks(const std::array<uint8_t, 4> &uid)
         }
       }
       cJSON *json_loop = cJSON_GetObjectItem(json_root, "loop");
-      if (json_loop && cJSON_IsTrue(json_loop)) {
+      if (cJSON_IsTrue(json_loop)) {
         loop = true;
       }
       cJSON *json_shuffle = cJSON_GetObjectItem(json_root, "shuffle");
-      if (json_shuffle && cJSON_IsTrue(json_shuffle)) {
+      if (cJSON_IsTrue(json_shuffle)) {
         std::shuffle(tracks.begin(), tracks.end(), RandomGenerator());
       }
       cJSON *json_volume = cJSON_GetObjectItem(json_root, "volume");
-      if (json_volume && cJSON_IsNumber(json_volume)) {
+      if (cJSON_IsNumber(json_volume)) {
         volume = std::ranges::clamp(static_cast<int>(json_volume->valuedouble),
-                                    1, 100);
-        audio_board.set_volume(volume);
+                                    setting.get_min_volume(),
+                                    setting.get_max_volume());
+      } else {
+        volume = setting.get_init_volume();
       }
       cJSON_Delete(json_root);
     }
+    audio_board.set_volume(volume);
     audio_pipeline.play(std::move(tracks), loop);
   } else {
+    mkdir(cards_path, 0777);
     std::ofstream new_file(filename);
     new_file << "{}";
   }
